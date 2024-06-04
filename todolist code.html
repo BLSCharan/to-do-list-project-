@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>To-Do List</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #A9A9A9;
+}
+.container {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+h1 {
+    text-align: center;
+}
+input[type="text"] {
+    width: 70%;
+    padding: 8px;
+    margin-right: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+button {
+    padding: 8px 15px;
+    border-radius: 5px;
+    border: none;
+    background-color: #007bff;
+    color: #fff;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #0056b3;
+}
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+li {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    justify-content: space-between;
+}
+.completed {
+    text-decoration: line-through;
+    color: #aaa;
+}
+.delete-btn {
+    background-color: #dc3545;
+    color: #fff;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.delete-btn:hover {
+    background-color: #c82333;
+}
+.edit-btn {
+    background-color: #ffc107;
+    color: #fff;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-left: 5px;
+}
+.edit-btn:hover {
+    background-color: #e0a800;
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>To-Do List</h1>
+    <input type="text" id="taskInput" placeholder="Add a new task...">
+    <button id="addTaskBtn">Add Task</button>
+    <ul id="taskList"></ul>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const taskInput = document.getElementById("taskInput");
+    const addTaskBtn = document.getElementById("addTaskBtn");
+    const taskList = document.getElementById("taskList");
+
+    // Retrieve tasks from local storage
+    let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+    // Render tasks
+    function renderTasks() {
+        taskList.innerHTML = "";
+        tasks.forEach(function(task, index) {
+            const li = document.createElement("li");
+            li.innerHTML = `
+                <span class="${task.completed ? 'completed' : ''}">${task.text}</span>
+                <input type="checkbox" data-index="${index}" ${task.completed ? 'checked' : ''}>
+                <button class="edit-btn" data-index="${index}">Edit</button>
+                <button class="delete-btn" data-index="${index}">Delete</button>
+            `;
+            taskList.appendChild(li);
+        });
+        // Update local storage
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
+
+    // Add a new task
+    function addTask() {
+        const text = taskInput.value.trim();
+        if (text !== "") {
+            tasks.push({ text, completed: false });
+            renderTasks();
+            taskInput.value = "";
+        }
+    }
+
+    // Toggle task completion
+    function toggleCompleted(event) {
+        if (event.target.tagName === "INPUT") {
+            const index = event.target.getAttribute("data-index");
+            tasks[index].completed = !tasks[index].completed;
+            renderTasks();
+        }
+    }
+
+    // Edit a task
+    function editTask(event) {
+        if (event.target.classList.contains("edit-btn")) {
+            const index = event.target.getAttribute("data-index");
+            const newText = prompt("Edit your task:", tasks[index].text);
+            if (newText !== null && newText.trim() !== "") {
+                tasks[index].text = newText.trim();
+                renderTasks();
+            }
+        }
+    }
+
+    // Delete a task
+    function deleteTask(event) {
+        if (event.target.classList.contains("delete-btn")) {
+            const index = event.target.getAttribute("data-index");
+            tasks.splice(index, 1);
+            renderTasks();
+        }
+    }
+
+    // Event listeners
+    addTaskBtn.addEventListener("click", addTask);
+    taskList.addEventListener("click", toggleCompleted);
+    taskList.addEventListener("click", editTask);
+    taskList.addEventListener("click", deleteTask);
+
+    // Initial render
+    renderTasks();
+});
+</script>
+</body>
+</html>
